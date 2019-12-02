@@ -60,7 +60,7 @@ public class ClientWebClient {
 
     }
 
-    public void listAllPatient2() {
+    public void listAllPatient2Example() {
 
         ClientHttpConnector httpConnector = new ReactorClientHttpConnector(HttpClient.create()
                                                                                      .tcpConfiguration(client -> client.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000)));
