@@ -52,4 +52,13 @@ class ClientWebClientTest {
         log.info("Nowy pacjent {}", patientResponse);
     }
 
+    @Test
+    void getPatient() {
+
+        PatientResponse patientResponse = patientService.getPatient(8)
+                                                        .block();
+
+        log.info("Pobrany pacjent {}", patientResponse);
+    }
+
 }
