@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.Exceptions;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -58,7 +59,6 @@ public class ServiceAdapter {
     }
 
     public Mono<PatientResponse> createPatient(PatientRequest request) {
-
         return serverWebClient.build()
                               .method(HttpMethod.POST)
                               .uri("/api/db/patients/v2")
@@ -81,6 +81,7 @@ public class ServiceAdapter {
 
                                                      if (integer == 4 || isRetry) {
                                                          log.info("Retry count: {}, Exception message: {}", integer, throwable.getMessage());
+                                                         throw Exceptions.propagate(throwable);
                                                      }
                                                      log.info("Retry count: {}", integer);
                                                      return integer;
@@ -105,5 +106,31 @@ public class ServiceAdapter {
             }
         }
         throw new RuntimeException("Błąd dodawania pacjenta");
+    }
+
+    public Mono<PatientResponse> getPatientById(long id) {
+       return serverWebClient.build()
+                       .method(HttpMethod.GET)
+                       .uri(uriBuilder -> uriBuilder.path("/api/db/patients/{id}")
+                                                    .build(id))
+                       .exchange()
+                       .onErrorResume(
+                               throwable -> {
+                                   log.error("Wyjątek przy pobieraniu pacjenta", throwable);
+                                   throw new RuntimeException("Error connection");
+
+                               })
+                       .doOnNext(clientResponse -> log.info("Response {}", clientResponse.statusCode()))
+                       .flatMap(this::wrapGetResponse);
+    }
+
+    private Mono<PatientResponse> wrapGetResponse(ClientResponse clientResponse) {
+        if (clientResponse.statusCode()
+                          .is2xxSuccessful()) {
+            if (HttpStatus.OK.equals(clientResponse.statusCode())) {
+                return clientResponse.bodyToMono(PatientResponse.class);
+            }
+        }
+        throw new RuntimeException("Błąd pobierania pacjenta");
     }
 }
