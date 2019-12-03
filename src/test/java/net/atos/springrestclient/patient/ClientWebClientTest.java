@@ -36,4 +36,20 @@ class ClientWebClientTest {
                       .block();
     }
 
+    @Test
+    void createPatient() {
+
+        PatientRequest patientRequest = PatientRequest.builder()
+                                                      .name("Adam")
+                                                      .lastName("Mickiewicz")
+                                                      .pesel("78782783428732")
+                                                      .date(new Date())
+                                                      .build();
+
+        PatientResponse patientResponse = patientService.createPatient(patientRequest)
+                                                        .block();
+
+        log.info("Nowy pacjent {}", patientResponse);
+    }
+
 }

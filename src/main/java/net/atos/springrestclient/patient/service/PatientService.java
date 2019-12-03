@@ -25,4 +25,8 @@ public class PatientService {
                              .doOnNext(p -> log.info("Pacjent: {}", p));
     }
 
+    public Mono<PatientResponse> createPatient(PatientRequest request){
+        return serviceAdapter.createPatient(request);
+    }
+
 }
